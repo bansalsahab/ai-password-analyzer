@@ -23,6 +23,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URI', 'sqlite:/
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Configure longer session lifetime (1 day)
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)
+# Ensure session cookies work across all browsers
+app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 # Initialize extensions
 db.init_app(app)
@@ -159,7 +163,13 @@ def login():
             # Set a flash message to confirm the login succeeded and master password is stored
             flash('Login successful! Your passwords are now accessible.', 'success')
             
+            # Force a session save to ensure all data is written before redirect
+            session.modified = True
+            
             next_page = request.args.get('next')
+            # Add debug logging
+            print(f"Login successful for user {user.username}. Redirecting to: {next_page or 'dashboard'}")
+            
             return redirect(next_page or url_for('dashboard'))
         else:
             flash('Invalid email or password', 'danger')
@@ -180,8 +190,20 @@ def logout():
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    # Check if user is authenticated (redundant with @login_required but added for clarity)
+    if not current_user.is_authenticated:
+        flash('Please log in to access your dashboard.', 'warning')
+        return redirect(url_for('login'))
+        
+    # Log dashboard access for debugging
+    print(f"Dashboard accessed by user: {current_user.username}, Session active: {session.get('master_password') is not None}")
+    
     # Check if master password is in session
     has_master_password = 'master_password' in session
+    
+    # If master password is missing but user is logged in, show a warning
+    if not has_master_password:
+        flash('Your session needs to be refreshed to view encrypted passwords.', 'warning')
     
     # Get user's saved passwords
     saved_passwords = Password.query.filter_by(user_id=current_user.id).all()
