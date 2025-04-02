@@ -141,6 +141,8 @@ document.addEventListener('DOMContentLoaded', function () {
         // AI Analysis
         document.querySelector('.deepseek-output').innerHTML = data.ai_analysis;
 
+        document.querySelector('.ai-output').innerHTML = data.ai_analysis;
+        
         // Vulnerability breakdown
         const vulnBreakdown = document.getElementById('vulnerabilityBreakdown');
         vulnBreakdown.innerHTML = '';

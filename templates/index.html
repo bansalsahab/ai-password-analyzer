@@ -195,10 +195,17 @@
         </div>
         
         <!-- Loading indicator -->
+
         <div id="loading" class="hidden flex flex-col items-center justify-center py-12">
             <div class="spinner w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin-slow"></div>
             <p class="mt-4 text-lg">Analyzing with <span class="glowing-text">DeepSeek AI</span>...</p>
             <p class="text-sm text-gray-600 dark:text-gray-400">Cross-referencing with 14.3 million leaked passwords...</p>
+
+        <div id="loading" class="hidden">
+            <div class="spinner"></div>
+            <p>Analyzing with <span class="glowing-text">Advanced AI</span>...</p>
+            <p>Cross-referencing with 14.3 million leaked passwords...</p>
+
         </div>
         
         <!-- Results container -->
@@ -351,6 +358,8 @@
                         <i class="fas fa-robot text-primary-600 dark:text-primary-400 mr-2"></i> AI Security Analysis
                     </h2>
                     <div class="deepseek-output p-4 bg-gray-50 dark:bg-dark-900 rounded-lg"></div>
+                    <h2><i class="fas fa-robot"></i> AI Security Analysis</h2>
+                    <div class="ai-output"></div>
                 </div>
                 
                 <!-- Vulnerability card -->
@@ -391,11 +400,17 @@
                             </div>
                             
                             <div class="unique-feature-card">
+
                                 <div class="icon w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mb-4">
                                     <i class="fas fa-brain text-primary-600 dark:text-primary-400 text-xl"></i>
                                 </div>
                                 <h3 class="text-lg font-semibold mb-2">DeepSeek AI Analysis</h3>
                                 <p class="text-sm text-gray-600 dark:text-gray-400">Uses advanced AI to detect subtle patterns and weaknesses that traditional analyzers miss.</p>
+
+                                <div class="icon"><i class="fas fa-brain"></i></div>
+                                <h3>Advanced AI Analysis</h3>
+                                <p>Uses sophisticated neural networks to detect subtle patterns and weaknesses that traditional analyzers miss.</p>
+
                             </div>
                             
                             <div class="unique-feature-card">
@@ -420,8 +435,13 @@
         </div>
         
         <!-- Footer -->
+
         <div class="footer mt-12 text-center text-sm text-gray-600 dark:text-gray-400">
             <p>Powered by DeepSeek AI and Machine Learning</p>
+
+        <div class="footer">
+            <p>Powered by Advanced Neural Networks and Machine Learning</p>
+
             <p>Uses the complete RockYou dataset (14.3 million leaked passwords) for comprehensive analysis</p>
         </div>
     </div>

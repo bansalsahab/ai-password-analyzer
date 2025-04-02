@@ -16,10 +16,12 @@ With increasing cyber threats, password security remains critical. Many users do
 
 - **Secure User Authentication**: Added signup/login functionality with zero-knowledge encryption for password storage
 - **Password Vault**: Users can now save analyzed passwords in an encrypted vault using AES-256
+- **Enhanced Session Management**: Improved session persistence across browsers and devices
 - **Improved Visualization Layout**: Enhanced chart layout with a responsive 2-column grid that adapts to mobile screens
 - **Added Chart Titles**: Each chart now has a clear title for better understanding
 - **New Light/Dark Mode Toggle**: Users can switch between dark and light themes for better accessibility and visual comfort
-- **Enhanced User Experience**: Better responsive design for all screen sizes
+- **Enhanced Password Strength Display**: Visual badges and gauges to display password strength and entropy
+- **Improved User Experience**: Better responsive design for all screen sizes
 
 ## Key Features
 
@@ -35,11 +37,12 @@ With increasing cyber threats, password security remains critical. Many users do
   - Multi-dimensional security profile radar
   - Security degradation forecast over time (accounting for advancing technologies)
 - **RockYou Database Check**: Cross-references password against the complete RockYou database (14.3 million leaked passwords) to check for prior exposure
-- **AI-Powered Security Analysis**: Utilizes DeepSeek AI to analyze complex patterns and vulnerabilities that traditional algorithms miss
+- **AI-Powered Security Analysis**: Utilizes sophisticated neural networks to analyze complex patterns and vulnerabilities that traditional algorithms miss
 - **Pattern Recognition Engine**: Identifies 15+ common password patterns including keyboard walks, leetspeak, date formats, and more
 - **Smart Password Recommendations**: Suggests improved alternatives that balance security with memorability
 - **Comprehensive Vulnerability Breakdown**: Provides detailed explanations of identified weaknesses
 - **Attack Simulation**: Calculates estimated crack times across multiple attack vectors (dictionary, brute force, pattern-based, etc.)
+- **Visual Strength Indicators**: Intuitive badges and gauges clearly display password strength and entropy
 
 ## How It Works
 
@@ -58,7 +61,7 @@ With increasing cyber threats, password security remains critical. Many users do
 - **Frontend**: HTML5, CSS3, JavaScript, Chart.js for interactive visualizations
 - **Backend**: Flask (Python) for server-side processing and API endpoints
 - **Database**: SQLAlchemy with SQLite database (easily configurable for other databases)
-- **Authentication**: Flask-Login for session management
+- **Authentication**: Flask-Login for session management with enhanced cookie security
 - **Encryption**: AES-256 for password encryption with PBKDF2 key derivation
 - **Security Analysis**:
   - Shannon entropy algorithms
@@ -68,7 +71,7 @@ With increasing cyber threats, password security remains critical. Many users do
 - **Data Sources**:
   - Complete RockYou database (14.3 million leaked passwords)
   - Common password pattern library
-- **AI Integration**: DeepSeek AI for advanced pattern analysis
+- **AI Integration**: Advanced Neural Networks for sophisticated pattern analysis
 
 ## How to Run
 
