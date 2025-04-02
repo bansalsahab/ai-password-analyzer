@@ -4,61 +4,158 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Password Vault - Password Analyzer</title>
-    <link rel="stylesheet" href="{{ url_for('serve_static', path='css/styles.css') }}">
-    <!-- Add Font Awesome for icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        secondary: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        danger: {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            200: '#fecaca',
+                            300: '#fca5a5',
+                            400: '#f87171',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                            800: '#991b1b',
+                            900: '#7f1d1d',
+                        },
+                        success: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        warning: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
-    <header class="dashboard-header">
-        <div class="logo">
-            <i class="fas fa-shield-alt"></i>
-            <span>Password Analyzer</span>
-        </div>
-        <nav class="dashboard-nav">
-            <ul>
-                <li><a href="{{ url_for('index') }}" class="nav-link"><i class="fas fa-home"></i> Analyzer</a></li>
-                <li><a href="{{ url_for('dashboard') }}" class="nav-link active"><i class="fas fa-vault"></i> Password Vault</a></li>
-            </ul>
-        </nav>
-        <div class="user-menu">
-            <span class="username">{{ current_user.username }}</span>
-            <a href="{{ url_for('refresh_session') }}" class="refresh-btn">
-                <i class="fas fa-sync-alt"></i> Refresh Session
-            </a>
-            <a href="{{ url_for('logout') }}" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
+<body class="bg-secondary-50 text-secondary-800 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white border-b border-secondary-200 shadow-sm">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-shield-alt text-primary-600 text-xl"></i>
+                <span class="font-bold text-lg text-primary-700">Password Analyzer</span>
+            </div>
+            
+            <nav class="hidden md:flex">
+                <ul class="flex space-x-6">
+                    <li><a href="{{ url_for('index') }}" class="flex items-center text-secondary-600 hover:text-primary-600 transition-colors">
+                        <i class="fas fa-home mr-2"></i> Analyzer
+                    </a></li>
+                    <li><a href="{{ url_for('dashboard') }}" class="flex items-center text-primary-600 font-medium border-b-2 border-primary-500 pb-1">
+                        <i class="fas fa-vault mr-2"></i> Password Vault
+                    </a></li>
+                </ul>
+            </nav>
+            
+            <div class="flex items-center space-x-4">
+                <span class="hidden md:inline text-secondary-600">{{ current_user.username }}</span>
+                <a href="{{ url_for('refresh_session') }}" class="flex items-center text-sm text-secondary-600 hover:text-primary-600 transition-colors">
+                    <i class="fas fa-sync-alt mr-1"></i> 
+                    <span class="hidden md:inline">Refresh Session</span>
+                </a>
+                <a href="{{ url_for('logout') }}" class="flex items-center text-sm bg-secondary-100 hover:bg-secondary-200 text-secondary-700 px-3 py-1.5 rounded-md transition-colors">
+                    <i class="fas fa-sign-out-alt mr-1"></i> 
+                    <span class="hidden md:inline">Logout</span>
+                </a>
+            </div>
         </div>
     </header>
 
-    <main class="dashboard-main">
-        <div class="dashboard-sidebar">
-            <div class="user-info">
-                <div class="user-avatar">
-                    <i class="fas fa-user-circle"></i>
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col md:flex-row">
+        <!-- Sidebar -->
+        <aside class="bg-white border-r border-secondary-200 w-full md:w-64 md:min-h-[calc(100vh-64px)] p-4">
+            <div class="flex items-center space-x-3 mb-6 pb-4 border-b border-secondary-200">
+                <div class="bg-primary-100 text-primary-600 rounded-full p-2">
+                    <i class="fas fa-user-circle text-xl"></i>
                 </div>
-                <div class="user-details">
-                    <h3>{{ current_user.username }}</h3>
-                    <p>{{ current_user.email }}</p>
+                <div>
+                    <h3 class="font-medium text-secondary-800">{{ current_user.username }}</h3>
+                    <p class="text-sm text-secondary-500">{{ current_user.email }}</p>
                 </div>
             </div>
             
-            <ul class="sidebar-menu">
-                <li><a href="{{ url_for('dashboard') }}" class="active"><i class="fas fa-key"></i> Saved Passwords</a></li>
-                <li><a href="{{ url_for('index') }}"><i class="fas fa-search"></i> Analyze New Password</a></li>
+            <ul class="space-y-1 mb-6">
+                <li>
+                    <a href="{{ url_for('dashboard') }}" class="flex items-center space-x-2 px-3 py-2 rounded-md bg-primary-50 text-primary-700 font-medium">
+                        <i class="fas fa-key w-5"></i>
+                        <span>Saved Passwords</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('index') }}" class="flex items-center space-x-2 px-3 py-2 rounded-md text-secondary-600 hover:bg-secondary-50 transition-colors">
+                        <i class="fas fa-search w-5"></i>
+                        <span>Analyze New Password</span>
+                    </a>
+                </li>
             </ul>
             
-            <div class="security-info sidebar-security">
-                <h4><i class="fas fa-shield-alt"></i> Zero-Knowledge Encryption</h4>
-                <p>Your passwords are encrypted with AES-256 using your master password as the key.</p>
+            <div class="bg-secondary-50 rounded-lg p-3 border border-secondary-200">
+                <h4 class="flex items-center text-sm font-medium text-secondary-700 mb-2">
+                    <i class="fas fa-shield-alt mr-2 text-primary-500"></i> 
+                    Zero-Knowledge Encryption
+                </h4>
+                <p class="text-xs text-secondary-600">Your passwords are encrypted with AES-256 using your master password as the key.</p>
             </div>
-        </div>
+        </aside>
         
-        <div class="dashboard-content">
-            <div class="content-header">
-                <h1>Saved Passwords</h1>
-                <a href="{{ url_for('index') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Analyze New Password
+        <!-- Content Area -->
+        <div class="flex-1 p-4 md:p-6 max-w-full overflow-x-hidden">
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                <h1 class="text-2xl font-bold text-secondary-800 mb-4 md:mb-0">Saved Passwords</h1>
+                <a href="{{ url_for('index') }}" class="inline-flex items-center justify-center bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md transition-colors">
+                    <i class="fas fa-plus mr-2"></i> Analyze New Password
                 </a>
             </div>
             
@@ -66,9 +163,11 @@
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                        <div class="flash-message {{ category }}">
-                            {{ message }}
-                            <button class="close-flash"><i class="fas fa-times"></i></button>
+                        <div class="mb-4 p-3 rounded-md {{ 'bg-success-100 text-success-800 border border-success-200' if category == 'success' else 'bg-danger-100 text-danger-800 border border-danger-200' if category == 'error' else 'bg-primary-100 text-primary-800 border border-primary-200' }} flex justify-between items-center">
+                            <div>{{ message }}</div>
+                            <button class="close-flash text-secondary-500 hover:text-secondary-700">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
                     {% endfor %}
                 {% endif %}
@@ -76,75 +175,83 @@
             
             <!-- Session status notification -->
             {% if not has_master_password and passwords %}
-            <div class="flash-message info">
+            <div class="mb-4 p-3 rounded-md bg-warning-100 text-warning-800 border border-warning-200 flex justify-between items-center">
                 <div>
-                    <i class="fas fa-info-circle"></i> Your session has expired. 
-                    <a href="{{ url_for('refresh_session') }}" style="color: var(--primary-color); text-decoration: underline;">Refresh your session</a> 
+                    <i class="fas fa-info-circle mr-2"></i> Your session has expired. 
+                    <a href="{{ url_for('refresh_session') }}" class="text-primary-600 underline hover:text-primary-800">Refresh your session</a> 
                     to view your passwords.
                 </div>
-                <button class="close-flash"><i class="fas fa-times"></i></button>
+                <button class="close-flash text-secondary-500 hover:text-secondary-700">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             {% endif %}
             
-            <div class="passwords-container">
+            <!-- Passwords Grid -->
+            <div class="mt-4">
                 {% if passwords %}
-                    <div class="password-grid">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {% for password in passwords %}
-                            <div class="password-card">
-                                <div class="password-header">
-                                    <h3 class="password-label">
-                                        {% if password.website %}
-                                            <i class="fas fa-globe"></i>
-                                        {% else %}
-                                            <i class="fas fa-key"></i>
-                                        {% endif %}
-                                        {{ password.label or password.website or 'Unnamed Password' }}
-                                    </h3>
-                                    <div class="password-score">
-                                        <div class="score-badge score-{{ 'high' if password.score >= 80 else 'medium' if password.score >= 50 else 'low' }}">
-                                            {{ password.score }}
+                            <div class="bg-white rounded-lg shadow-sm border border-secondary-200 overflow-hidden hover:shadow-md transition-shadow">
+                                <div class="p-4 border-b border-secondary-100">
+                                    <div class="flex justify-between items-center">
+                                        <h3 class="font-medium text-secondary-800 flex items-center">
+                                            {% if password.website %}
+                                                <i class="fas fa-globe text-primary-500 mr-2"></i>
+                                            {% else %}
+                                                <i class="fas fa-key text-primary-500 mr-2"></i>
+                                            {% endif %}
+                                            <span class="truncate">{{ password.label or password.website or 'Unnamed Password' }}</span>
+                                        </h3>
+                                        <div class="flex-shrink-0">
+                                            <div class="inline-flex items-center justify-center rounded-full w-8 h-8 text-xs font-medium
+                                                {{ 'bg-success-100 text-success-700' if password.score >= 80 else 'bg-warning-100 text-warning-700' if password.score >= 50 else 'bg-danger-100 text-danger-700' }}">
+                                                {{ password.score }}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <div class="password-metadata">
+                                <div class="p-4 bg-secondary-50">
                                     {% if password.website %}
-                                        <div class="meta-item">
-                                            <span class="meta-label">Website:</span>
-                                            <span class="meta-value">{{ password.website }}</span>
+                                        <div class="flex justify-between text-sm mb-2">
+                                            <span class="text-secondary-500">Website:</span>
+                                            <span class="text-secondary-800 font-medium truncate max-w-[180px]">{{ password.website }}</span>
                                         </div>
                                     {% endif %}
                                     
-                                    <div class="meta-item">
-                                        <span class="meta-label">Entropy:</span>
-                                        <span class="meta-value">{{ "%.2f"|format(password.entropy) }}</span>
+                                    <div class="flex justify-between text-sm mb-2">
+                                        <span class="text-secondary-500">Entropy:</span>
+                                        <span class="text-secondary-800 font-medium">{{ "%.2f"|format(password.entropy) }}</span>
                                     </div>
                                     
-                                    <div class="meta-item">
-                                        <span class="meta-label">Added:</span>
-                                        <span class="meta-value">{{ password.created_at.split('T')[0] }}</span>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-secondary-500">Added:</span>
+                                        <span class="text-secondary-800 font-medium">{{ password.created_at.split('T')[0] }}</span>
                                     </div>
                                 </div>
                                 
-                                <div class="password-actions">
-                                    <button class="btn btn-sm btn-view" onclick="viewPassword({{ password.id }})">
-                                        <i class="fas fa-eye"></i> View
+                                <div class="flex border-t border-secondary-200">
+                                    <button class="flex-1 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50 transition-colors flex items-center justify-center" onclick="viewPassword({{ password.id }})">
+                                        <i class="fas fa-eye mr-1.5"></i> View
                                     </button>
                                     
-                                    <button class="btn btn-sm btn-delete" onclick="deletePassword({{ password.id }})">
-                                        <i class="fas fa-trash"></i> Delete
+                                    <button class="flex-1 py-2 text-sm font-medium text-danger-600 hover:bg-danger-50 transition-colors flex items-center justify-center border-l border-secondary-200" onclick="deletePassword({{ password.id }})">
+                                        <i class="fas fa-trash mr-1.5"></i> Delete
                                     </button>
                                 </div>
                             </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div class="no-passwords">
-                        <div class="empty-state">
-                            <i class="fas fa-key empty-icon"></i>
-                            <h2>No Saved Passwords</h2>
-                            <p>Analyze and save your first password from the analyzer page.</p>
-                            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                    <div class="flex items-center justify-center h-64 bg-white rounded-lg border border-secondary-200 p-6">
+                        <div class="text-center">
+                            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-100 text-primary-500 mb-4">
+                                <i class="fas fa-key text-2xl"></i>
+                            </div>
+                            <h2 class="text-xl font-bold text-secondary-800 mb-2">No Saved Passwords</h2>
+                            <p class="text-secondary-600 mb-4">Analyze and save your first password from the analyzer page.</p>
+                            <a href="{{ url_for('index') }}" class="inline-flex items-center justify-center bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md transition-colors">
                                 Analyze Password
                             </a>
                         </div>
@@ -155,78 +262,86 @@
     </main>
 
     <!-- Password View Modal -->
-    <div id="passwordModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modal-title">Password Details</h2>
-                <span class="close-modal">&times;</span>
+    <div id="passwordModal" class="fixed inset-0 bg-secondary-900/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4">
+            <div class="flex items-center justify-between p-4 border-b border-secondary-200">
+                <h2 id="modal-title" class="text-lg font-bold text-secondary-800">Password Details</h2>
+                <button class="close-modal text-secondary-500 hover:text-secondary-700">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div class="modal-body">
-                <div class="password-details">
-                    <div class="detail-group" id="password-field-container">
-                        <label>Password:</label>
-                        <div class="password-field">
-                            <input type="password" id="password-field" readonly>
-                            <button type="button" id="toggle-password" class="btn-icon">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button type="button" id="copy-password" class="btn-icon">
+            <div class="p-4">
+                <div class="space-y-4">
+                    <div id="password-field-container" class="space-y-1">
+                        <label class="text-sm font-medium text-secondary-700">Password:</label>
+                        <div class="flex items-center space-x-2">
+                            <div class="relative flex-1">
+                                <input type="password" id="password-field" readonly class="w-full px-3 py-2 border border-secondary-300 rounded-md bg-secondary-50 text-secondary-800 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                <button type="button" id="toggle-password" class="absolute right-2 top-1/2 -translate-y-1/2 text-secondary-500 hover:text-secondary-700">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <button type="button" id="copy-password" class="p-2 text-secondary-500 hover:text-secondary-700 bg-secondary-100 hover:bg-secondary-200 rounded-md transition-colors">
                                 <i class="fas fa-copy"></i>
                             </button>
                         </div>
-                        <div id="session-expired-message" style="display:none;" class="session-message">
-                            <p>Your session has expired. <a href="{{ url_for('refresh_session') }}" class="refresh-session">Refresh your session</a> to view your passwords.</p>
+                        <div id="session-expired-message" class="hidden mt-2 text-sm text-warning-600 bg-warning-50 p-2 rounded-md border border-warning-200">
+                            <p>Your session has expired. <a href="{{ url_for('refresh_session') }}" class="text-primary-600 hover:underline">Refresh your session</a> to view your passwords.</p>
                         </div>
                     </div>
                     
-                    <div class="detail-group">
-                        <label>Label:</label>
-                        <div id="label-field">-</div>
-                    </div>
-                    
-                    <div class="detail-group">
-                        <label>Website:</label>
-                        <div id="website-field">-</div>
-                    </div>
-                    
-                    <div class="detail-group">
-                        <label>Strength Score:</label>
-                        <div class="score-badge-large" id="score-field">0</div>
-                    </div>
-                    
-                    <div class="detail-group">
-                        <label>Entropy:</label>
-                        <div id="entropy-field">0</div>
-                    </div>
-                    
-                    <div class="detail-group">
-                        <label>Date Added:</label>
-                        <div id="created-field">-</div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-secondary-700">Label:</label>
+                            <div id="label-field" class="px-3 py-2 border border-secondary-200 rounded-md bg-secondary-50 text-secondary-800">-</div>
+                        </div>
+                        
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-secondary-700">Website:</label>
+                            <div id="website-field" class="px-3 py-2 border border-secondary-200 rounded-md bg-secondary-50 text-secondary-800 truncate">-</div>
+                        </div>
+                        
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-secondary-700">Strength Score:</label>
+                            <div id="score-field" class="inline-flex items-center justify-center px-3 py-1 rounded-md text-sm font-medium bg-secondary-100 text-secondary-800">0</div>
+                        </div>
+                        
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-secondary-700">Entropy:</label>
+                            <div id="entropy-field" class="px-3 py-2 border border-secondary-200 rounded-md bg-secondary-50 text-secondary-800">0</div>
+                        </div>
+                        
+                        <div class="space-y-1 col-span-2">
+                            <label class="text-sm font-medium text-secondary-700">Date Added:</label>
+                            <div id="created-field" class="px-3 py-2 border border-secondary-200 rounded-md bg-secondary-50 text-secondary-800">-</div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button id="close-modal-btn" class="btn btn-secondary">Close</button>
-                <a href="{{ url_for('refresh_session') }}" id="relogin-btn" class="btn btn-primary" style="display:none;">
-                    <i class="fas fa-sync-alt"></i> Refresh Session
+            <div class="flex justify-end space-x-2 p-4 border-t border-secondary-200">
+                <button id="close-modal-btn" class="px-4 py-2 bg-secondary-100 hover:bg-secondary-200 text-secondary-700 rounded-md transition-colors">Close</button>
+                <a href="{{ url_for('refresh_session') }}" id="relogin-btn" class="hidden px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition-colors">
+                    <i class="fas fa-sync-alt mr-1.5"></i> Refresh Session
                 </a>
             </div>
         </div>
     </div>
     
     <!-- Confirmation Modal -->
-    <div id="confirmModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Confirm Deletion</h2>
-                <span class="close-modal">&times;</span>
+    <div id="confirmModal" class="fixed inset-0 bg-secondary-900/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4">
+            <div class="flex items-center justify-between p-4 border-b border-secondary-200">
+                <h2 class="text-lg font-bold text-secondary-800">Confirm Deletion</h2>
+                <button class="close-modal text-secondary-500 hover:text-secondary-700">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete this password? This action cannot be undone.</p>
+            <div class="p-4">
+                <p class="text-secondary-700">Are you sure you want to delete this password? This action cannot be undone.</p>
             </div>
-            <div class="modal-footer">
-                <button id="cancel-delete" class="btn btn-secondary">Cancel</button>
-                <button id="confirm-delete" class="btn btn-danger">Delete</button>
+            <div class="flex justify-end space-x-2 p-4 border-t border-secondary-200">
+                <button id="cancel-delete" class="px-4 py-2 bg-secondary-100 hover:bg-secondary-200 text-secondary-700 rounded-md transition-colors">Cancel</button>
+                <button id="confirm-delete" class="px-4 py-2 bg-danger-600 hover:bg-danger-700 text-white rounded-md transition-colors">Delete</button>
             </div>
         </div>
     </div>
@@ -256,7 +371,7 @@
                     document.getElementById('modal-title').textContent = data.label || data.website || 'Password Details';
                     
                     // Make sure password field is always shown, even if password data isn't available yet
-                    document.getElementById('password-field-container').style.display = 'flex';
+                    document.getElementById('password-field-container').style.display = 'block';
                     
                     if (data.password) {
                         // Success - we have the password
@@ -267,7 +382,7 @@
                             // Session expired - show helpful message
                             document.getElementById('password-field').value = '';
                             document.getElementById('session-expired-message').style.display = 'block';
-                            document.getElementById('relogin-btn').style.display = 'inline-flex';
+                            document.getElementById('relogin-btn').style.display = 'flex';
                             
                             // Add a console message for debugging
                             console.log("Session expired or decryption failed: " + (data.error || "No specific error message"));
@@ -275,7 +390,7 @@
                             // Show a more visible warning
                             const scoreField = document.getElementById('score-field');
                             scoreField.innerHTML = '<i class="fas fa-lock"></i>';
-                            scoreField.className = 'score-badge-large score-low';
+                            scoreField.className = 'inline-flex items-center justify-center px-3 py-1 rounded-md text-sm font-medium bg-danger-100 text-danger-700';
                         } else {
                             // No decryption attempted
                             document.getElementById('password-field').value = '••••••••••••';
@@ -287,8 +402,15 @@
                     
                     const scoreField = document.getElementById('score-field');
                     scoreField.textContent = data.score;
-                    scoreField.className = 'score-badge-large score-' + 
-                        (data.score >= 80 ? 'high' : data.score >= 50 ? 'medium' : 'low');
+                    
+                    // Set score color based on value
+                    if (data.score >= 80) {
+                        scoreField.className = 'inline-flex items-center justify-center px-3 py-1 rounded-md text-sm font-medium bg-success-100 text-success-700';
+                    } else if (data.score >= 50) {
+                        scoreField.className = 'inline-flex items-center justify-center px-3 py-1 rounded-md text-sm font-medium bg-warning-100 text-warning-700';
+                    } else {
+                        scoreField.className = 'inline-flex items-center justify-center px-3 py-1 rounded-md text-sm font-medium bg-danger-100 text-danger-700';
+                    }
                     
                     document.getElementById('entropy-field').textContent = data.entropy.toFixed(2);
                     document.getElementById('created-field').textContent = new Date(data.created_at).toLocaleDateString();
@@ -306,7 +428,7 @@
         // Password deletion
         function deletePassword(id) {
             currentPasswordId = id;
-            document.getElementById('confirmModal').style.display = 'block';
+            document.getElementById('confirmModal').style.display = 'flex';
         }
         
         // Toggle password visibility
@@ -399,5 +521,4 @@
         });
     </script>
 </body>
-</html> < ! - -   T e s t   c o m m e n t   - - >  
- 
+</html>
