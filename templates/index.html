@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Enhanced Password Analyzer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <!-- Theme toggle switch -->
+    <div class="theme-switch-container">
+        <label class="theme-switch">
+            <input type="checkbox" id="themeToggle">
+            <span class="theme-slider"></span>
+            <div class="theme-icons">
+                <i class="fas fa-moon"></i>
+                <i class="fas fa-sun"></i>
+            </div>
+        </label>
+    </div>
+    
+    <div class="analyzer-container">
+        <h1>AI-Enhanced Password Analyzer <span class="glowing-text">Pro</span></h1>
+        
+        <!-- Password input section -->
+        <div class="input-container">
+            <input type="password" id="passwordInput" placeholder="Enter your password to analyze">
+            <button id="togglePassword"><i class="fas fa-eye"></i></button>
+            <button id="analyzeBtn" class="gradient-button">Analyze</button>
+        </div>
+        
+        <!-- Max crack time selector section -->
+        <div class="threshold-container">
+            <label for="crackTimeThreshold">Maximum acceptable crack time:</label>
+            <select id="crackTimeThreshold">
+                <option value="instant">Instant (Not secure)</option>
+                <option value="seconds">Seconds (Not secure)</option>
+                <option value="minutes">Minutes (Not secure)</option>
+                <option value="hours">Hours (Not secure)</option>
+                <option value="days">Days (Minimum security)</option>
+                <option value="months">Months (Better security)</option>
+                <option value="years">Years (Good security)</option>
+                <option value="centuries" selected>Centuries (Excellent security)</option>
+            </select>
+            <button id="generateBtn" class="gradient-button">Generate Secure Password</button>
+        </div>
+        
+        <!-- Loading indicator -->
+        <div id="loading" class="hidden">
+            <div class="spinner"></div>
+            <p>Analyzing with <span class="glowing-text">DeepSeek AI</span>...</p>
+            <p>Cross-referencing with 14.3 million leaked passwords...</p>
+        </div>
+        
+        <!-- Results container -->
+        <div id="resultsContainer" class="hidden">
+            <div class="results-grid">
+                <!-- Strength card -->
+                <div class="result-card strength-card">
+                    <h2>Password Strength</h2>
+                    <div class="strength-container">
+                        <div class="security-score-badge" style="--score: 0%;">0</div>
+                        <div class="strength-details">
+                            <div class="strength-label">Security Score</div>
+                            <div class="strength-rating-label">Weak</div>
+                            <div id="strengthMeter">
+                                <div class="meter-fill"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="scoreValue" class="hidden">0</div>
+                    <div class="strength-description">
+                        <div class="strength-tip"><i class="fas fa-info-circle"></i> <span id="strengthTip">Enter a password to analyze its strength</span></div>
+                    </div>
+                </div>
+                
+                <!-- Improvement card -->
+                <div class="result-card improvement-card">
+                    <h2>Improved Password</h2>
+                    <div class="improved-password-container">
+                        <div class="improvement-label">Our Suggestion</div>
+                        <div class="improved-password-display">
+                            <div id="improvedPassword"></div>
+                            <button id="copyImproved"><i class="fas fa-copy"></i> Copy</button>
+                        </div>
+                        <div id="improvementReasoning"></div>
+                    </div>
+                </div>
+                
+                <!-- Crack time card -->
+                <div class="result-card crack-time-card">
+                    <h2>Time to Crack</h2>
+                    <div class="large-text" id="crackTimeValue"></div>
+                    <table id="attackTable">
+                        <tr>
+                            <th>Attack Vector</th>
+                            <th>Estimated Time</th>
+                        </tr>
+                    </table>
+                </div>
+                
+                <!-- Entropy card -->
+                <div class="result-card entropy-card">
+                    <h2>Password Entropy</h2>
+                    <div class="entropy-container">
+                        <div class="entropy-badge">
+                            <span id="entropyValue">0</span>
+                            <span class="entropy-unit">bits</span>
+                        </div>
+                        <div class="entropy-details">
+                            <div class="entropy-label">Information Density</div>
+                            <div class="entropy-gauge">
+                                <div class="gauge-fill"></div>
+                                <div class="gauge-markers">
+                                    <span>Low</span>
+                                    <span>Medium</span>
+                                    <span>High</span>
+                                </div>
+                            </div>
+                            <p id="bitsExplanation" class="entropy-explanation">Entropy measures password randomness</p>
+                        </div>
+                    </div>
+                    <div class="rockyou-check">
+                        <div id="inCommonDb" class="warning hidden">
+                            <i class="fas fa-exclamation-triangle"></i> Found in leaked password database
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Enhanced visualization section -->
+                <div class="result-card full-width">
+                    <h2>Advanced Visualizations</h2>
+                    <div class="charts-container">
+                        <div class="chart-wrapper vulnerability-chart">
+                            <h3>Password Vulnerability Analysis</h3>
+                            <canvas id="attackChart"></canvas>
+                        </div>
+                        <div class="chart-wrapper dna-chart">
+                            <h3>Character Composition</h3>
+                            <canvas id="passwordDnaChart"></canvas>
+                        </div>
+                        <div class="chart-wrapper radar-chart">
+                            <h3>Password Security Profile</h3>
+                            <canvas id="securityRadarChart"></canvas>
+                        </div>
+                        <div class="chart-wrapper timeline-chart">
+                            <h3>Security Over Time</h3>
+                            <canvas id="timeEvolutionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI analysis card -->
+                <div class="result-card ai-card">
+                    <h2><i class="fas fa-robot"></i> AI Security Analysis</h2>
+                    <div class="deepseek-output"></div>
+                </div>
+                
+                <!-- Vulnerability card -->
+                <div class="result-card vulnerability-card">
+                    <h2>Vulnerability Breakdown</h2>
+                    <div id="vulnerabilityBreakdown"></div>
+                </div>
+                
+                <!-- Uniqueness section -->
+                <div class="result-card full-width">
+                    <section class="uniqueness-section">
+                        <h2>Why Our Password Analyzer Is Unique</h2>
+                        <p>Our AI-powered password analyzer offers advanced features not found in standard tools:</p>
+                        
+                        <div class="unique-features">
+                            <div class="unique-feature-card">
+                                <div class="icon"><i class="fas fa-database"></i></div>
+                                <h3>Full RockYou Dataset</h3>
+                                <p>Cross-references your password against the complete RockYou database of 14.3 million leaked passwords, not just a sample.</p>
+                            </div>
+                            
+                            <div class="unique-feature-card">
+                                <div class="icon"><i class="fas fa-chart-line"></i></div>
+                                <h3>Future Security Timeline</h3>
+                                <p>Shows how your password security degrades over time with advancing technology, including quantum computing threats.</p>
+                            </div>
+                            
+                            <div class="unique-feature-card">
+                                <div class="icon"><i class="fas fa-dna"></i></div>
+                                <h3>Password DNA Visualization</h3>
+                                <p>Visualizes the character composition of your password to identify structural weaknesses in your security.</p>
+                            </div>
+                            
+                            <div class="unique-feature-card">
+                                <div class="icon"><i class="fas fa-brain"></i></div>
+                                <h3>DeepSeek AI Analysis</h3>
+                                <p>Uses advanced AI to detect subtle patterns and weaknesses that traditional analyzers miss.</p>
+                            </div>
+                            
+                            <div class="unique-feature-card">
+                                <div class="icon"><i class="fas fa-key"></i></div>
+                                <h3>Threshold-Based Generation</h3>
+                                <p>Generate passwords that meet specific security requirements based on your desired crack-time threshold.</p>
+                            </div>
+                            
+                            <div class="unique-feature-card">
+                                <div class="icon"><i class="fas fa-fingerprint"></i></div>
+                                <h3>Memorability Balance</h3>
+                                <p>Uniquely balances security with memorability, so your passwords are both secure and usable.</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>Powered by DeepSeek AI and Machine Learning</p>
+            <p>Uses the complete RockYou dataset (14.3 million leaked passwords) for comprehensive analysis</p>
+        </div>
+    </div>
+    
+    <!-- JavaScript files -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/js/analyzer.js"></script>
+    <script src="/static/js/charts.js"></script>
+    <script src="/static/js/password-generator.js"></script>
+    
+    <script>
+        // Theme toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('themeToggle');
+            
+            // Check for saved theme preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+                themeToggle.checked = true;
+            }
+            
+            // Toggle theme when switch is clicked
+            themeToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.classList.add('light-mode');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.body.classList.remove('light-mode');
+                    localStorage.setItem('theme', 'dark');
+                }
+                
+                // Redraw charts if they exist
+                if (window.passwordCharts) {
+                    Object.values(window.passwordCharts).forEach(chart => {
+                        if (chart && typeof chart.update === 'function') {
+                            chart.update();
+                        }
+                    });
+                }
+            });
+            
+            // Update security score badge value and rating when score changes
+            const scoreValue = document.getElementById('scoreValue');
+            const securityBadge = document.querySelector('.security-score-badge');
+            const strengthRating = document.querySelector('.strength-rating-label');
+            const strengthTip = document.getElementById('strengthTip');
+            
+            // Create a MutationObserver to watch for changes to the score value
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'characterData' || mutation.type === 'childList') {
+                        const score = parseInt(scoreValue.textContent);
+                        securityBadge.textContent = score;
+                        securityBadge.style.setProperty('--score', `${score}%`);
+                        
+                        // Update badge color and strength rating based on score
+                        if (score < 40) {
+                            securityBadge.style.background = `conic-gradient(rgba(255, 99, 132, 0.8) ${score}%, rgba(0, 0, 0, 0.2) ${score}%)`;
+                            strengthRating.textContent = "Weak";
+                            strengthRating.className = "strength-rating-label weak";
+                            strengthTip.textContent = "Your password is vulnerable to common attacks. Consider adding more complexity.";
+                        } else if (score < 70) {
+                            securityBadge.style.background = `conic-gradient(rgba(255, 205, 86, 0.8) ${score}%, rgba(0, 0, 0, 0.2) ${score}%)`;
+                            strengthRating.textContent = "Moderate";
+                            strengthRating.className = "strength-rating-label moderate";
+                            strengthTip.textContent = "Your password has decent strength but could be improved with more variety.";
+                        } else {
+                            securityBadge.style.background = `conic-gradient(rgba(75, 192, 192, 0.8) ${score}%, rgba(0, 0, 0, 0.2) ${score}%)`;
+                            strengthRating.textContent = "Strong";
+                            strengthRating.className = "strength-rating-label strong";
+                            strengthTip.textContent = "Your password has excellent security characteristics.";
+                        }
+                    }
+                });
+            });
+            
+            // Start observing the score value
+            observer.observe(scoreValue, {
+                characterData: true,
+                childList: true,
+                subtree: true
+            });
+            
+            // Update entropy gauge when entropy value changes
+            const entropyValue = document.getElementById('entropyValue');
+            const gaugeElement = document.querySelector('.gauge-fill');
+            
+            // Create a mutation observer for entropy value
+            const entropyObserver = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'characterData' || mutation.type === 'childList') {
+                        const entropy = parseFloat(entropyValue.textContent);
+                        
+                        // Set gauge fill percentage based on entropy (max around 100 bits)
+                        let percentage = Math.min(100, entropy / 100 * 100);
+                        gaugeElement.style.width = `${percentage}%`;
+                        
+                        // Set color based on entropy value
+                        if (entropy < 40) {
+                            gaugeElement.style.backgroundColor = 'rgba(255, 99, 132, 1)';
+                        } else if (entropy < 70) {
+                            gaugeElement.style.backgroundColor = 'rgba(255, 205, 86, 1)';
+                        } else {
+                            gaugeElement.style.backgroundColor = 'rgba(75, 192, 192, 1)';
+                        }
+                    }
+                });
+            });
+            
+            // Start observing the entropy value
+            entropyObserver.observe(entropyValue, {
+                characterData: true,
+                childList: true,
+                subtree: true
+            });
+        });
+    </script>
+</body>
+</html> 

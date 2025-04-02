@@ -1,0 +1,7 @@
+flask>=2.0.1
+python-dotenv>=0.19.0
+requests>=2.26.0
+scikit-learn>=1.0.2
+tensorflow>=2.6.0
+hashcat>=6.2.5
+python-Levenshtein>=0.12.2 
