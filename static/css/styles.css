@@ -416,14 +416,15 @@ tr:not(:last-child) td {
     border-left: 2px solid var(--primary-light);
 }
 
-.deepseek-output ul {
-    margin-left: 20px;
-    margin-bottom: 20px;
-    color: var(--text-secondary);
+.ai-output ul {
+    padding-left: 1rem;
+    margin-top: 10px;
 }
 
-.deepseek-output li {
+.ai-output li {
     margin-bottom: 8px;
+    position: relative;
+    padding-left: 5px;
 }
 
 .warning {

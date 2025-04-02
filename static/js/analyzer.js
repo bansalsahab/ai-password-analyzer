@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('bitsExplanation').textContent = getBitsExplanation(data.entropy);
         
         // AI Analysis
-        document.querySelector('.deepseek-output').innerHTML = data.ai_analysis;
+        document.querySelector('.ai-output').innerHTML = data.ai_analysis;
         
         // Vulnerability breakdown
         const vulnBreakdown = document.getElementById('vulnerabilityBreakdown');
