@@ -22,6 +22,9 @@
         </nav>
         <div class="user-menu">
             <span class="username">{{ current_user.username }}</span>
+            <a href="{{ url_for('refresh_session') }}" class="refresh-btn">
+                <i class="fas fa-sync-alt"></i> Refresh Session
+            </a>
             <a href="{{ url_for('logout') }}" class="logout-btn">
                 <i class="fas fa-sign-out-alt"></i> Logout
             </a>
@@ -65,10 +68,23 @@
                     {% for category, message in messages %}
                         <div class="flash-message {{ category }}">
                             {{ message }}
+                            <button class="close-flash"><i class="fas fa-times"></i></button>
                         </div>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
+            
+            <!-- Session status notification -->
+            {% if not has_master_password and passwords %}
+            <div class="flash-message info">
+                <div>
+                    <i class="fas fa-info-circle"></i> Your session has expired. 
+                    <a href="{{ url_for('refresh_session') }}" style="color: var(--primary-color); text-decoration: underline;">Refresh your session</a> 
+                    to view your passwords.
+                </div>
+                <button class="close-flash"><i class="fas fa-times"></i></button>
+            </div>
+            {% endif %}
             
             <div class="passwords-container">
                 {% if passwords %}
@@ -158,6 +174,9 @@
                                 <i class="fas fa-copy"></i>
                             </button>
                         </div>
+                        <div id="session-expired-message" style="display:none;" class="session-message">
+                            <p>Your session has expired. <a href="{{ url_for('refresh_session') }}" class="refresh-session">Refresh your session</a> to view your passwords.</p>
+                        </div>
                     </div>
                     
                     <div class="detail-group">
@@ -188,6 +207,9 @@
             </div>
             <div class="modal-footer">
                 <button id="close-modal-btn" class="btn btn-secondary">Close</button>
+                <a href="{{ url_for('refresh_session') }}" id="relogin-btn" class="btn btn-primary" style="display:none;">
+                    <i class="fas fa-sync-alt"></i> Refresh Session
+                </a>
             </div>
         </div>
     </div>
@@ -223,6 +245,8 @@
             document.getElementById('score-field').textContent = '0';
             document.getElementById('entropy-field').textContent = '0';
             document.getElementById('created-field').textContent = '-';
+            document.getElementById('session-expired-message').style.display = 'none';
+            document.getElementById('relogin-btn').style.display = 'none';
             
             // Fetch password details
             fetch(`/passwords/${id}`)
@@ -231,11 +255,31 @@
                     // Update modal with password details
                     document.getElementById('modal-title').textContent = data.label || data.website || 'Password Details';
                     
+                    // Make sure password field is always shown, even if password data isn't available yet
+                    document.getElementById('password-field-container').style.display = 'flex';
+                    
                     if (data.password) {
+                        // Success - we have the password
                         document.getElementById('password-field').value = data.password;
-                        document.getElementById('password-field-container').style.display = 'flex';
+                        console.log("Password successfully decrypted and displayed");
                     } else {
-                        document.getElementById('password-field-container').style.display = 'none';
+                        if (data.decryption_failed) {
+                            // Session expired - show helpful message
+                            document.getElementById('password-field').value = '';
+                            document.getElementById('session-expired-message').style.display = 'block';
+                            document.getElementById('relogin-btn').style.display = 'inline-flex';
+                            
+                            // Add a console message for debugging
+                            console.log("Session expired or decryption failed: " + (data.error || "No specific error message"));
+                            
+                            // Show a more visible warning
+                            const scoreField = document.getElementById('score-field');
+                            scoreField.innerHTML = '<i class="fas fa-lock"></i>';
+                            scoreField.className = 'score-badge-large score-low';
+                        } else {
+                            // No decryption attempted
+                            document.getElementById('password-field').value = '••••••••••••';
+                        }
                     }
                     
                     document.getElementById('label-field').textContent = data.label || '-';
@@ -250,11 +294,12 @@
                     document.getElementById('created-field').textContent = new Date(data.created_at).toLocaleDateString();
                     
                     // Show modal
-                    document.getElementById('passwordModal').style.display = 'block';
+                    document.getElementById('passwordModal').style.display = 'flex';
                 })
                 .catch(error => {
                     console.error('Error fetching password details:', error);
-                    alert('Failed to load password details. Please try again.');
+                    // Show error notification
+                    alert('Error fetching password details. Please try again.');
                 });
         }
         
@@ -267,26 +312,34 @@
         // Toggle password visibility
         document.getElementById('toggle-password').addEventListener('click', function() {
             const passwordField = document.getElementById('password-field');
-            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordField.setAttribute('type', type);
-            
             const icon = this.querySelector('i');
-            icon.classList.toggle('fa-eye');
-            icon.classList.toggle('fa-eye-slash');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                passwordField.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
         });
         
         // Copy password to clipboard
         document.getElementById('copy-password').addEventListener('click', function() {
             const passwordField = document.getElementById('password-field');
-            passwordField.select();
-            document.execCommand('copy');
-            
-            // Show copied notification
-            const icon = this.querySelector('i');
-            icon.className = 'fas fa-check';
-            setTimeout(() => {
-                icon.className = 'fas fa-copy';
-            }, 2000);
+            if (passwordField.value && passwordField.value.indexOf('[Session expired') === -1 && 
+                passwordField.value !== '••••••••••••') {
+                passwordField.select();
+                document.execCommand('copy');
+                
+                // Show feedback
+                const icon = this.querySelector('i');
+                const originalClass = icon.className;
+                icon.className = 'fas fa-check';
+                
+                setTimeout(function() {
+                    icon.className = originalClass;
+                }, 1500);
+            }
         });
         
         // Confirm deletion
@@ -333,6 +386,16 @@
             if (event.target.classList.contains('modal')) {
                 event.target.style.display = 'none';
             }
+        });
+        
+        // Initialize all close flash buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            // Close flash messages
+            document.querySelectorAll('.close-flash').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.parentElement.remove();
+                });
+            });
         });
     </script>
 </body>

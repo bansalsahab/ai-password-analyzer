@@ -68,24 +68,41 @@ class User(db.Model, UserMixin):
         """
         Encrypt a password using derived key from master password
         """
-        # Generate a random IV for AES encryption
-        iv = os.urandom(16)
-        
-        # Derive encryption key from master password
-        key = self.derive_key(self.password_hash, self.salt)
-        
-        # Create cipher object and encrypt
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        ciphertext = cipher.encrypt(pad(plain_password.encode(), AES.block_size))
-        
-        # Return IV + ciphertext
-        return base64.b64encode(iv + ciphertext).decode('utf-8')
+        try:
+            # We need to use the master password for encryption, not the password hash
+            # Use the session master password from the current context
+            from flask import session
+            master_password = session.get('master_password')
+            
+            if not master_password:
+                print("No master password in session for encryption")
+                return None
+                
+            # Generate a random IV for AES encryption
+            iv = os.urandom(16)
+            
+            # Derive encryption key from master password
+            key = self.derive_key(master_password, self.salt)
+            
+            # Create cipher object and encrypt
+            cipher = AES.new(key, AES.MODE_CBC, iv)
+            ciphertext = cipher.encrypt(pad(plain_password.encode(), AES.block_size))
+            
+            # Return IV + ciphertext
+            return base64.b64encode(iv + ciphertext).decode('utf-8')
+        except Exception as e:
+            print(f"Encryption error: {e}")
+            return None
     
     def decrypt_password(self, encrypted_password, master_password):
         """
         Decrypt a password using derived key from master password
         """
         try:
+            if not master_password:
+                print("No master password provided for decryption")
+                return None
+                
             # Derive encryption key
             key = self.derive_key(master_password, self.salt)
             
@@ -133,8 +150,16 @@ class Password(db.Model):
         }
         
         if include_password and master_password:
-            decrypted = self.owner.decrypt_password(self.encrypted_password, master_password)
-            if decrypted:
-                result['password'] = decrypted
+            try:
+                # Use a more robust approach that will attempt decryption
+                decrypted = self.owner.decrypt_password(self.encrypted_password, master_password)
+                
+                if decrypted:
+                    result['password'] = decrypted
+                else:
+                    print(f"Failed to decrypt password (ID: {self.id}) - decrypt_password returned None")
+            except Exception as e:
+                print(f"Exception during password decryption (ID: {self.id}): {str(e)}")
+                # Don't add password to result if decryption fails
         
         return result 

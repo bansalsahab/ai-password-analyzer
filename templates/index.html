@@ -23,6 +23,46 @@
         </label>
     </div>
     
+    <!-- User authentication menu -->
+    <div class="auth-menu">
+        {% if current_user.is_authenticated %}
+            <div class="user-info-menu">
+                <span class="username-display">{{ current_user.username }}</span>
+                <div class="dropdown-menu">
+                    <a href="{{ url_for('dashboard') }}" class="menu-item">
+                        <i class="fas fa-vault"></i> My Passwords
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="menu-item">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <div class="auth-buttons">
+                <a href="{{ url_for('login') }}" class="auth-btn login-btn">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+                <a href="{{ url_for('register') }}" class="auth-btn register-btn">
+                    <i class="fas fa-user-plus"></i> Register
+                </a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                        <button class="close-flash"><i class="fas fa-times"></i></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
     <div class="analyzer-container">
         <h1>AI-Enhanced Password Analyzer <span class="glowing-text">Pro</span></h1>
         
@@ -58,6 +98,29 @@
         
         <!-- Results container -->
         <div id="resultsContainer" class="hidden">
+            <!-- Save password section (only for logged-in users) -->
+            {% if current_user.is_authenticated %}
+            <div id="savePasswordSection" class="save-password-section">
+                <div class="save-password-header">
+                    <h3><i class="fas fa-save"></i> Save this password</h3>
+                    <p>Save this password securely in your encrypted vault</p>
+                </div>
+                <div class="save-password-form">
+                    <div class="form-group">
+                        <label for="passwordLabel">Label (optional)</label>
+                        <input type="text" id="passwordLabel" placeholder="e.g., Work Email">
+                    </div>
+                    <div class="form-group">
+                        <label for="passwordWebsite">Website (optional)</label>
+                        <input type="text" id="passwordWebsite" placeholder="e.g., example.com">
+                    </div>
+                    <button id="savePasswordBtn" class="gradient-button save-btn">
+                        <i class="fas fa-lock"></i> Save Securely
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+            
             <div class="results-grid">
                 <!-- Strength card -->
                 <div class="result-card strength-card">
@@ -221,6 +284,23 @@
         </div>
     </div>
     
+    <!-- Save password success/error modal -->
+    <div id="saveModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="saveModalTitle">Password Saved</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p id="saveModalMessage">Your password has been securely saved in your encrypted vault.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="saveModalClose" class="btn btn-primary">OK</button>
+                <a id="viewPasswordsLink" href="{{ url_for('dashboard') }}" class="btn btn-secondary">View All Passwords</a>
+            </div>
+        </div>
+    </div>
+    
     <!-- JavaScript files -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/static/js/analyzer.js"></script>
@@ -333,6 +413,98 @@
                 childList: true,
                 subtree: true
             });
+        });
+        
+        // Close flash messages
+        document.querySelectorAll('.close-flash').forEach(button => {
+            button.addEventListener('click', function() {
+                this.parentElement.remove();
+            });
+        });
+        
+        // User dropdown menu toggle
+        const userMenu = document.querySelector('.user-info-menu');
+        if (userMenu) {
+            userMenu.addEventListener('click', function(e) {
+                const dropdown = this.querySelector('.dropdown-menu');
+                dropdown.classList.toggle('active');
+                e.stopPropagation();
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function() {
+                const dropdown = document.querySelector('.dropdown-menu');
+                if (dropdown) {
+                    dropdown.classList.remove('active');
+                }
+            });
+        }
+        
+        // Save password functionality
+        const savePasswordBtn = document.getElementById('savePasswordBtn');
+        if (savePasswordBtn) {
+            savePasswordBtn.addEventListener('click', function() {
+                const password = document.getElementById('passwordInput').value;
+                const label = document.getElementById('passwordLabel').value;
+                const website = document.getElementById('passwordWebsite').value;
+                const score = parseInt(document.getElementById('scoreValue').textContent);
+                const entropy = parseFloat(document.getElementById('entropyValue').textContent);
+                
+                if (!password) {
+                    showSaveModal('Error', 'No password to save. Please analyze a password first.', false);
+                    return;
+                }
+                
+                // Send to server
+                fetch('/save-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        password: password,
+                        label: label,
+                        website: website,
+                        score: score,
+                        entropy: entropy
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showSaveModal('Password Saved', 'Your password has been securely saved in your encrypted vault.', true);
+                    } else {
+                        showSaveModal('Error', data.error || 'Failed to save password. Please try again.', false);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving password:', error);
+                    showSaveModal('Error', 'Failed to save password. Please try again.', false);
+                });
+            });
+        }
+        
+        // Show save modal with appropriate message
+        function showSaveModal(title, message, success) {
+            const modal = document.getElementById('saveModal');
+            const modalTitle = document.getElementById('saveModalTitle');
+            const modalMessage = document.getElementById('saveModalMessage');
+            const viewPasswordsLink = document.getElementById('viewPasswordsLink');
+            
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            viewPasswordsLink.style.display = success ? 'inline-block' : 'none';
+            
+            modal.style.display = 'flex';
+        }
+        
+        // Close save modal
+        document.querySelector('#saveModal .close-modal').addEventListener('click', function() {
+            document.getElementById('saveModal').style.display = 'none';
+        });
+        
+        document.getElementById('saveModalClose').addEventListener('click', function() {
+            document.getElementById('saveModal').style.display = 'none';
         });
     </script>
 </body>

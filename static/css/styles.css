@@ -1,46 +1,96 @@
 /* True Dark theme for the Password Analyzer - Grid Layout */
 
 :root {
-    /* True dark monochrome color palette */
-    --primary-color: #ffffff;
-    --primary-light: #e0e0e0;
-    --bg-color-dark: #000000;
-    --bg-color-main: #0a0a0a;
-    --card-bg-color: #121212;
-    --card-bg-color-hover: #1a1a1a;
-    --text-color: #ffffff;
-    --text-secondary: #a0a0a0;
-    --border-color: #333333;
-    --success-color: #ffffff;
-    --warning-color: #e0e0e0;
-    --danger-color: #e0e0e0;
-    --input-bg: #1a1a1a;
-    --shadow: 0 8px 16px rgba(0, 0, 0, 0.7);
-    --card-radius: 8px;
-    --btn-radius: 4px;
-    --input-radius: 4px;
-    --chart-bg-color: rgba(0, 0, 0, 0.5);
-    --feature-card-bg: rgba(20, 20, 20, 0.7);
+    /* Main colors */
+    --bg-color: #121212;
+    --bg-main: #0a0a0a;
+    --bg-gradient: linear-gradient(135deg, #121212, #090909);
+    --text-color: #f1f1f1;
+    --text-secondary: #cccccc;
+    --primary-color: #6b46c1;
+    --primary-color-darker: #543698;
+    --primary-color-rgb: 107, 70, 193;
+    --accent-color: #ff5e62;
+    --border-color: #2a2a2a;
+    
+    /* Card and input colors */
+    --bg-input: #1a1a1a;
+    --chart-bg-color: #1a1a1a;
+    --feature-card-bg: #1d1d1d;
+    
+    /* States and feedback colors */
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    --warning-color: #ffc107;
+    --success-color-rgb: 40, 167, 69;
+    --danger-color-rgb: 220, 53, 69;
+    --info-color-rgb: 23, 162, 184;
+    
+    /* Visual effects */
+    --card-radius: 16px;
+    --btn-radius: 8px;
+    --card-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    --card-shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.5);
+    
+    /* Authentication specific */
+    --auth-bg: rgba(20, 20, 20, 0.95);
+    --auth-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    --input-border: #333;
+    --input-focus-border: #6b46c1;
+    --btn-primary: #6b46c1;
+    --btn-primary-hover: #543698;
+    --btn-secondary: #2a2a2a;
+    --btn-secondary-hover: #3a3a3a;
+    --btn-danger: #dc3545;
+    --btn-danger-hover: #c82333;
 }
 
 /* Light theme colors */
 body.light-mode {
-    --primary-color: #2563eb;
-    --primary-light: #3b82f6;
-    --bg-color-dark: #ffffff;
-    --bg-color-main: #f3f4f6;
-    --card-bg-color: #ffffff;
-    --card-bg-color-hover: #f9fafb;
-    --text-color: #1f2937;
-    --text-secondary: #4b5563;
-    --border-color: #e5e7eb;
-    --success-color: #10b981;
-    --warning-color: #f59e0b;
-    --danger-color: #ef4444;
-    --input-bg: #f9fafb;
-    --shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    --chart-bg-color: rgba(243, 244, 246, 0.7);
-    --feature-card-bg: rgba(255, 255, 255, 0.9);
+    /* Main colors */
+    --bg-color: #f5f5f5;
+    --bg-main: #ffffff;
+    --bg-gradient: linear-gradient(135deg, #f5f5f5, #e9e9e9);
+    --text-color: #121212;
+    --text-secondary: #444444;
+    --primary-color: #6b46c1;
+    --primary-color-darker: #543698;
+    --primary-color-rgb: 107, 70, 193;
+    --accent-color: #ff5e62;
+    --border-color: #e0e0e0;
+    
+    /* Card and input colors */
+    --bg-input: #ffffff;
+    --chart-bg-color: #ffffff;
+    --feature-card-bg: #f8f8f8;
+    
+    /* States and feedback colors */
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    --warning-color: #ffc107;
+    --success-color-rgb: 40, 167, 69;
+    --danger-color-rgb: 220, 53, 69;
+    --info-color-rgb: 23, 162, 184;
+    
+    /* Visual effects */
+    --card-radius: 16px;
+    --btn-radius: 8px;
+    --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    --card-shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.15);
+    
+    /* Authentication specific */
+    --auth-bg: rgba(255, 255, 255, 0.95);
+    --auth-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    --input-border: #e0e0e0;
+    --input-focus-border: #6b46c1;
+    --btn-primary: #6b46c1;
+    --btn-primary-hover: #543698;
+    --btn-secondary: #f0f0f0;
+    --btn-secondary-hover: #e0e0e0;
+    --btn-danger: #dc3545;
+    --btn-danger-hover: #c82333;
 }
 
 * {
@@ -1874,6 +1924,7 @@ body.light-mode .security-score-badge::before {
     box-shadow: var(--card-shadow);
     padding: 1.5rem;
     transition: all 0.3s ease;
+    background-color: var(--chart-bg-color);
 }
 
 .password-card:hover {
@@ -2019,14 +2070,15 @@ body.light-mode .security-score-badge::before {
 .btn-icon {
     background: none;
     border: none;
-    color: var(--color-text-secondary);
+    color: var(--text-color);
     cursor: pointer;
     padding: 0.5rem;
     transition: all 0.3s ease;
 }
 
 .btn-icon:hover {
-    color: var(--color-primary);
+    color: var(--primary-color);
+    transform: scale(1.1);
 }
 
 .empty-state {
@@ -2039,8 +2091,8 @@ body.light-mode .security-score-badge::before {
 
 .empty-icon {
     font-size: 4rem;
-    color: var(--color-primary);
-    opacity: 0.5;
+    color: var(--primary-color);
+    opacity: 0.8;
     margin-bottom: 1rem;
 }
 
@@ -2050,7 +2102,7 @@ body.light-mode .security-score-badge::before {
 }
 
 .empty-state p {
-    color: var(--color-text-secondary);
+    color: var(--text-color);
     margin-bottom: 1.5rem;
 }
 
@@ -2062,20 +2114,21 @@ body.light-mode .security-score-badge::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.7);
     z-index: 1000;
     align-items: center;
     justify-content: center;
 }
 
 .modal-content {
-    background: var(--bg-card);
+    background-color: var(--chart-bg-color);
     border-radius: 1rem;
     box-shadow: var(--card-shadow);
     width: 90%;
     max-width: 500px;
     overflow: hidden;
     animation: modalFadeIn 0.3s ease;
+    border: 1px solid var(--border-color);
 }
 
 .modal-header {
@@ -2083,13 +2136,15 @@ body.light-mode .security-score-badge::before {
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--chart-bg-color);
 }
 
 .modal-header h2 {
     font-size: 1.5rem;
     font-weight: 700;
     margin: 0;
+    color: var(--text-color);
 }
 
 .close-modal {
@@ -2105,6 +2160,8 @@ body.light-mode .security-score-badge::before {
 
 .modal-body {
     padding: 1.5rem;
+    color: var(--text-color);
+    background-color: var(--chart-bg-color);
 }
 
 .modal-footer {
@@ -2129,22 +2186,32 @@ body.light-mode .security-score-badge::before {
 
 .detail-group label {
     font-weight: 600;
-    color: var(--color-text-secondary);
+    color: var(--text-color);
+    font-size: 0.95rem;
 }
 
 .password-field {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0 0.5rem;
 }
 
 .password-field input {
     flex: 1;
     padding: 0.75rem;
-    border: 1px solid var(--color-border);
-    border-radius: 0.5rem;
-    background: var(--bg-input);
-    color: var(--color-text);
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    font-size: 1rem;
+    font-family: monospace;
+}
+
+.password-field input:focus {
+    outline: none;
 }
 
 /* Save Password Section on Analyzer */
@@ -2192,45 +2259,52 @@ body.light-mode .security-score-badge::before {
 
 /* Top-right auth menu on analyzer */
 .auth-menu {
-    position: absolute;
-    top: 1.5rem;
-    right: 5rem;
-    z-index: 100;
+    position: fixed;
+    top: 20px;
+    right: 100px;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .auth-buttons {
     display: flex;
-    gap: 1rem;
+    gap: 10px;
 }
 
 .auth-btn {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 2rem;
-    text-decoration: none;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
     font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
     transition: all 0.3s ease;
+    white-space: nowrap;
 }
 
 .login-btn {
     background: transparent;
-    color: var(--color-primary);
-    border: 1px solid var(--color-primary);
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
 }
 
 .login-btn:hover {
-    background: rgba(var(--color-primary-rgb), 0.1);
+    background: rgba(var(--primary-color-rgb), 0.1);
 }
 
 .register-btn {
-    background: var(--color-primary);
+    background: var(--primary-color);
     color: white;
+    border: 2px solid var(--primary-color);
 }
 
 .register-btn:hover {
-    background: var(--color-primary-darker);
+    background: var(--primary-color-darker);
+    transform: translateY(-2px);
 }
 
 .user-info-menu {
@@ -2241,16 +2315,19 @@ body.light-mode .security-score-badge::before {
 .username-display {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 2rem;
-    background: var(--bg-secondary);
-    color: var(--color-primary);
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background-color: var(--chart-bg-color);
+    color: var(--primary-color);
     font-weight: 600;
+    font-size: 14px;
+    border: 2px solid var(--primary-color);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
 }
 
 .username-display::after {
-    content: '\f0d7';
+    content: '\f107';
     font-family: 'Font Awesome 6 Free';
     font-weight: 900;
 }
@@ -2259,14 +2336,15 @@ body.light-mode .security-score-badge::before {
     position: absolute;
     top: 100%;
     right: 0;
-    margin-top: 0.5rem;
-    background: var(--bg-card);
-    border-radius: 0.75rem;
-    box-shadow: var(--card-shadow);
+    margin-top: 8px;
+    background-color: var(--chart-bg-color);
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
     width: 200px;
     overflow: hidden;
     display: none;
     z-index: 10;
+    border: 1px solid var(--border-color);
 }
 
 .dropdown-menu.active {
@@ -2277,28 +2355,31 @@ body.light-mode .security-score-badge::before {
 .menu-item {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.875rem 1.25rem;
-    color: var(--color-text);
+    gap: 10px;
+    padding: 12px 16px;
+    color: var(--text-color);
     text-decoration: none;
     transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
 }
 
 .menu-item:hover {
-    background: var(--bg-secondary);
-    color: var(--color-primary);
+    background: var(--chart-bg-color);
+    color: var(--primary-color);
 }
 
 .menu-item i {
-    width: 1.25rem;
+    width: 16px;
     text-align: center;
 }
 
 /* Flash message container */
 .flash-container {
     position: fixed;
-    top: 1rem;
-    right: 1rem;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 1000;
     width: 350px;
     max-width: 90%;
@@ -2311,8 +2392,8 @@ body.light-mode .security-score-badge::before {
 }
 
 @keyframes modalFadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 /* Responsive adjustments */
@@ -2359,10 +2440,10 @@ body.light-mode .security-score-badge::before {
     }
     
     .auth-menu {
-        position: static;
-        margin-bottom: 1rem;
-        display: flex;
-        justify-content: center;
+        position: absolute;
+        top: 70px;
+        right: 50%;
+        transform: translateX(50%);
     }
     
     .dropdown-menu {
@@ -2370,4 +2451,221 @@ body.light-mode .security-score-badge::before {
         left: 50%;
         transform: translateX(-50%);
     }
+}
+
+/* Password field and modal improvements */
+#password-field {
+    font-family: monospace;
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+    color: var(--text-color);
+    background-color: transparent;
+    padding: 8px 12px;
+    flex: 1;
+}
+
+.score-badge-large {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 20px;
+    color: white;
+    font-weight: bold;
+    font-size: 1.1rem;
+    min-width: 50px;
+    text-align: center;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.meta-label {
+    color: var(--text-color);
+    opacity: 0.9;
+    font-weight: 500;
+    min-width: 80px;
+}
+
+.meta-value {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+/* Flash messages improvements */
+.flash-message {
+    background-color: rgba(var(--primary-color-rgb), 0.2);
+    border-left: 4px solid var(--primary-color);
+    color: var(--text-color);
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.flash-message.success {
+    background-color: rgba(var(--success-color-rgb), 0.2);
+    border-left: 4px solid var(--success-color);
+}
+
+.flash-message.danger {
+    background-color: rgba(var(--danger-color-rgb), 0.2);
+    border-left: 4px solid var(--danger-color);
+}
+
+.flash-message.info {
+    background-color: rgba(var(--info-color-rgb), 0.2);
+    border-left: 4px solid var(--info-color);
+}
+
+/* Improved modal display for passwords */
+.password-modal-display {
+    background-color: var(--bg-input);
+    padding: 16px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 16px;
+    color: var(--text-color);
+    margin: 10px 0;
+    border: 1px solid var(--border-color);
+    word-break: break-all;
+}
+
+/* Empty state and message improvements */
+.empty-state p, .empty-state h2 {
+    color: var(--text-color);
+}
+
+.empty-icon {
+    color: var(--primary-color);
+    opacity: 0.8;
+}
+
+/* Improve dashboard card */
+.password-card .meta-item {
+    margin-bottom: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.light-mode .password-card .meta-item {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Fix any transparent text in cards */
+.password-label {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.user-details h3, .user-details p {
+    color: var(--text-color);
+}
+
+.user-details p {
+    opacity: 0.9;
+}
+
+.sidebar-security h4 {
+    color: var(--primary-color);
+}
+
+.sidebar-security p {
+    color: var(--text-color);
+    opacity: 0.9;
+}
+
+/* Add a small animation for password reveal */
+@keyframes revealPassword {
+    0% { opacity: 0; transform: translateY(5px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+#password-field[type="text"] {
+    animation: revealPassword 0.3s ease;
+}
+
+/* Session expired message */
+.session-message {
+    margin-top: 10px;
+    padding: 12px 16px;
+    background-color: rgba(var(--info-color-rgb), 0.15);
+    border-left: 4px solid var(--info-color);
+    border-radius: 6px;
+    color: var(--text-color);
+}
+
+.session-message p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.refresh-session {
+    color: var(--primary-color);
+    text-decoration: underline;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.refresh-session:hover {
+    color: var(--primary-color-darker);
+    text-decoration: none;
+}
+
+/* Ensure the modal buttons are styled correctly */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Fix for the input field when displaying error message */
+#password-field[value=""] {
+    color: transparent;
+}
+
+/* Make the primary login button more visible */
+#relogin-btn {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 8px 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: var(--btn-radius);
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+#relogin-btn:hover {
+    background-color: var(--primary-color-darker);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Refresh session button */
+.refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: var(--info-color);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    margin-right: 8px;
+    transition: all 0.3s ease;
+}
+
+.refresh-btn:hover {
+    background-color: rgba(var(--info-color-rgb), 0.8);
+    transform: translateY(-2px);
+}
+
+.refresh-btn i {
+    font-size: 14px;
 } 

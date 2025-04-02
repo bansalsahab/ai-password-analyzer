@@ -10,7 +10,7 @@ from collections import Counter
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_migrate import Migrate
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 
 # Import models and forms
@@ -21,6 +21,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(24).hex())
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URI', 'sqlite:///password_analyzer.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Configure longer session lifetime (1 day)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)
 
 # Initialize extensions
 db.init_app(app)
@@ -149,7 +151,13 @@ def login():
             
             # Store master password temporarily for this session (will be used for decryption)
             # This is a security tradeoff - we keep it in the session for usability
+            # Store it as a variable that won't be lost during redirection
             session['master_password'] = form.password.data
+            # Set permanent session to avoid quick expiration
+            session.permanent = True
+            
+            # Set a flash message to confirm the login succeeded and master password is stored
+            flash('Login successful! Your passwords are now accessible.', 'success')
             
             next_page = request.args.get('next')
             return redirect(next_page or url_for('dashboard'))
@@ -172,13 +180,17 @@ def logout():
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    # Check if master password is in session
+    has_master_password = 'master_password' in session
+    
     # Get user's saved passwords
     saved_passwords = Password.query.filter_by(user_id=current_user.id).all()
     
     # Convert to dict without decrypted passwords
     passwords_data = [p.to_dict() for p in saved_passwords]
     
-    return render_template('dashboard.html', passwords=passwords_data)
+    return render_template('dashboard.html', passwords=passwords_data, 
+                           has_master_password=has_master_password)
 
 @app.route('/analyze', methods=['POST'])
 def analyze_password():
@@ -252,27 +264,39 @@ def save_password():
     if 'master_password' not in session:
         return jsonify({'error': 'Session expired. Please log in again.'}), 401
     
-    # Encrypt the password
-    encrypted_password = current_user.encrypt_password(plain_password)
-    
-    # Create and save password record
-    password = Password(
-        user_id=current_user.id,
-        encrypted_password=encrypted_password,
-        website=website,
-        label=label,
-        score=score,
-        entropy=entropy
-    )
-    
-    db.session.add(password)
-    db.session.commit()
-    
-    return jsonify({
-        'success': True,
-        'message': 'Password saved successfully',
-        'password_id': password.id
-    })
+    try:
+        # Encrypt the password
+        encrypted_password = current_user.encrypt_password(plain_password)
+        
+        if not encrypted_password:
+            return jsonify({'error': 'Failed to encrypt password. Please refresh your session.'}), 500
+        
+        # Create and save password record
+        password = Password(
+            user_id=current_user.id,
+            encrypted_password=encrypted_password,
+            website=website,
+            label=label or 'Unnamed Password',  # Ensure label has a default value
+            score=score,
+            entropy=entropy
+        )
+        
+        db.session.add(password)
+        db.session.commit()
+        
+        # Print confirmation to server logs
+        print(f"Password saved successfully. ID: {password.id}, User: {current_user.username}, Label: {password.label}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Password saved successfully',
+            'password_id': password.id
+        })
+    except Exception as e:
+        # Log the error
+        print(f"Error saving password: {str(e)}")
+        db.session.rollback()
+        return jsonify({'error': f'Failed to save password: {str(e)}'}), 500
 
 @app.route('/passwords')
 @login_required
@@ -292,13 +316,61 @@ def view_password(password_id):
     password = Password.query.filter_by(id=password_id, user_id=current_user.id).first_or_404()
     
     # Check if master password exists in session
-    include_decrypted = 'master_password' in session
-    master_password = session.get('master_password') if include_decrypted else None
+    master_password = session.get('master_password', '')
+    if not master_password:
+        print(f"No master password in session for user {current_user.username} when viewing password {password_id}")
+        return jsonify({
+            'id': password.id,
+            'website': password.website,
+            'label': password.label,
+            'score': password.score,
+            'entropy': password.entropy,
+            'created_at': password.created_at.isoformat(),
+            'last_updated': password.last_updated.isoformat(),
+            'decryption_failed': True,
+            'error': 'Session expired. Please refresh your session.'
+        })
     
-    # Convert to dict, optionally with decrypted password
-    password_data = password.to_dict(include_password=include_decrypted, master_password=master_password)
-    
-    return jsonify(password_data)
+    # Try to decrypt the password
+    try:
+        # Attempt direct decryption
+        decrypted = current_user.decrypt_password(password.encrypted_password, master_password)
+        
+        # Create the response
+        password_data = {
+            'id': password.id,
+            'website': password.website,
+            'label': password.label,
+            'score': password.score,
+            'entropy': password.entropy,
+            'created_at': password.created_at.isoformat(),
+            'last_updated': password.last_updated.isoformat()
+        }
+        
+        if decrypted:
+            # Successfully decrypted
+            password_data['password'] = decrypted
+            print(f"Successfully decrypted password {password_id} for user {current_user.username}")
+        else:
+            # Failed to decrypt
+            password_data['decryption_failed'] = True
+            print(f"Failed to decrypt password {password_id} for user {current_user.username}")
+        
+        return jsonify(password_data)
+        
+    except Exception as e:
+        print(f"Error decrypting password {password_id}: {str(e)}")
+        return jsonify({
+            'id': password.id,
+            'website': password.website,
+            'label': password.label,
+            'score': password.score,
+            'entropy': password.entropy,
+            'created_at': password.created_at.isoformat(),
+            'last_updated': password.last_updated.isoformat(),
+            'decryption_failed': True,
+            'error': str(e)
+        })
 
 @app.route('/passwords/<int:password_id>', methods=['DELETE'])
 @login_required
@@ -319,6 +391,38 @@ def init_db():
         return jsonify({'message': 'Database initialized successfully'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/refresh-session', methods=['GET', 'POST'])
+@login_required
+def refresh_session():
+    """
+    Allow a logged-in user to re-enter their master password to refresh the session
+    without having to fully log out and log back in.
+    """
+    if request.method == 'POST':
+        master_password = request.form.get('master_password')
+        
+        if not master_password:
+            flash('Master password is required.', 'danger')
+            return render_template('refresh_session.html')
+        
+        # Verify the password
+        if current_user.verify_password(master_password):
+            # Update the session with the new master password
+            session['master_password'] = master_password
+            session.permanent = True
+            
+            # Log the success (without the actual password)
+            print(f"Session refreshed successfully for user: {current_user.username}")
+            
+            flash('Your session has been refreshed. You can now view your passwords.', 'success')
+            return redirect(url_for('dashboard'))
+        else:
+            # Log the failure
+            print(f"Failed session refresh attempt for user: {current_user.username}")
+            flash('Invalid master password. Please try again.', 'danger')
+    
+    return render_template('refresh_session.html')
 
 def calculate_entropy(password):
     """Calculate Shannon entropy of password"""
@@ -886,6 +990,23 @@ def calculate_pattern_data(password):
     }
 
 if __name__ == '__main__':
+    print("Starting Password Analyzer application...")
     with app.app_context():
-        db.create_all()  # Create database tables on startup
+        # Create database directory if it doesn't exist
+        import os
+        os.makedirs('instance', exist_ok=True)
+        
+        # Create database tables
+        db.create_all()
+        print("Database tables created or verified.")
+        
+        # Check if any users exist
+        user_count = User.query.count()
+        print(f"Found {user_count} users in the database.")
+        
+        # Check if any passwords exist
+        password_count = Password.query.count()
+        print(f"Found {password_count} saved passwords in the database.")
+    
+    # Run the app
     app.run(debug=True) 
