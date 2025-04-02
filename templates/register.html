@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Password Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('serve_static', path='css/styles.css') }}">
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1 class="auth-title">Create Account</h1>
+            
+            <div class="auth-description">
+                <p>Sign up for our secure password vault with zero-knowledge encryption.</p>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form class="auth-form" method="POST" action="{{ url_for('register') }}">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    <label for="username">
+                        <i class="fas fa-user"></i>
+                        Username
+                    </label>
+                    {{ form.username(class="form-control", placeholder="Choose a username") }}
+                    {% if form.username.errors %}
+                        <div class="error-message">
+                            {% for error in form.username.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope"></i>
+                        Email
+                    </label>
+                    {{ form.email(class="form-control", placeholder="Your email address") }}
+                    {% if form.email.errors %}
+                        <div class="error-message">
+                            {% for error in form.email.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i>
+                        Master Password
+                    </label>
+                    <div class="password-input-wrapper">
+                        {{ form.password(class="form-control", placeholder="Create a strong master password") }}
+                        <button type="button" class="toggle-password" title="Show/Hide Password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="password-strength" id="password-strength">
+                        <div class="strength-bar"></div>
+                    </div>
+                    <small class="form-text">
+                        Your master password is used to encrypt all your data. Make it strong and memorable - we can't recover it if you forget.
+                    </small>
+                    {% if form.password.errors %}
+                        <div class="error-message">
+                            {% for error in form.password.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm_password">
+                        <i class="fas fa-lock"></i>
+                        Confirm Master Password
+                    </label>
+                    {{ form.confirm_password(class="form-control", placeholder="Confirm your master password") }}
+                    {% if form.confirm_password.errors %}
+                        <div class="error-message">
+                            {% for error in form.confirm_password.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.submit(class="btn btn-primary auth-button") }}
+                </div>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Already have an account? <a href="{{ url_for('login') }}">Sign In</a></p>
+                <p><a href="{{ url_for('index') }}">Back to Home</a></p>
+            </div>
+            
+            <div class="security-info">
+                <h3><i class="fas fa-shield-alt"></i> Security First</h3>
+                <p>Your master password is never transmitted or stored on our servers. All encryption happens locally in your browser with PBKDF2 and AES-256.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle password visibility
+        document.querySelectorAll('.toggle-password').forEach(button => {
+            button.addEventListener('click', function() {
+                const passwordInput = this.parentElement.querySelector('input');
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                // Toggle icon
+                const icon = this.querySelector('i');
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
+            });
+        });
+        
+        // Password strength meter
+        const passwordInput = document.getElementById('password');
+        const strengthBar = document.querySelector('.strength-bar');
+        
+        if (passwordInput) {
+            passwordInput.addEventListener('input', function() {
+                const password = this.value;
+                let strength = 0;
+                
+                // Length check
+                if (password.length >= 12) strength += 25;
+                else if (password.length >= 8) strength += 15;
+                else if (password.length > 0) strength += 5;
+                
+                // Character variety checks
+                if (password.match(/[a-z]+/)) strength += 15;
+                if (password.match(/[A-Z]+/)) strength += 15;
+                if (password.match(/[0-9]+/)) strength += 15;
+                if (password.match(/[^a-zA-Z0-9]+/)) strength += 20;
+                
+                // Common patterns check (simplified)
+                if (password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{12,}$/)) {
+                    strength += 10;
+                }
+                
+                // Update the strength bar
+                strengthBar.style.width = `${Math.min(100, strength)}%`;
+                
+                // Update color based on strength
+                if (strength < 40) {
+                    strengthBar.style.backgroundColor = '#ff4d4d'; // Red - Weak
+                } else if (strength < 70) {
+                    strengthBar.style.backgroundColor = '#ffd700'; // Yellow - Medium
+                } else {
+                    strengthBar.style.backgroundColor = '#00cc44'; // Green - Strong
+                }
+            });
+        }
+    </script>
+</body>
+</html> 

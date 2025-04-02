@@ -14,6 +14,8 @@ With increasing cyber threats, password security remains critical. Many users do
 
 ## Recent Updates
 
+- **Secure User Authentication**: Added signup/login functionality with zero-knowledge encryption for password storage
+- **Password Vault**: Users can now save analyzed passwords in an encrypted vault using AES-256
 - **Improved Visualization Layout**: Enhanced chart layout with a responsive 2-column grid that adapts to mobile screens
 - **Added Chart Titles**: Each chart now has a clear title for better understanding
 - **New Light/Dark Mode Toggle**: Users can switch between dark and light themes for better accessibility and visual comfort
@@ -21,6 +23,11 @@ With increasing cyber threats, password security remains critical. Many users do
 
 ## Key Features
 
+- **Zero-Knowledge Encrypted Password Vault**:
+  - Master password is hashed with PBKDF2 and never stored
+  - Analyzed passwords are encrypted with AES-256 before storage
+  - Encryption key is derived from the master password
+  - All encryption/decryption happens client-side for true zero-knowledge security
 - **Advanced Entropy Analysis**: Calculates Shannon entropy and analyzes character set complexity to determine base security strength
 - **Visual Security Dashboard**: Four specialized interactive charts provide visual representations of:
   - Password vulnerability to different attack vectors
@@ -50,6 +57,9 @@ With increasing cyber threats, password security remains critical. Many users do
 
 - **Frontend**: HTML5, CSS3, JavaScript, Chart.js for interactive visualizations
 - **Backend**: Flask (Python) for server-side processing and API endpoints
+- **Database**: SQLAlchemy with SQLite database (easily configurable for other databases)
+- **Authentication**: Flask-Login for session management
+- **Encryption**: AES-256 for password encryption with PBKDF2 key derivation
 - **Security Analysis**:
   - Shannon entropy algorithms
   - Pattern matching with regex
@@ -65,8 +75,10 @@ With increasing cyber threats, password security remains critical. Many users do
 1. Ensure Python 3.6+ is installed on your system
 2. Clone this repository to your local machine
 3. Navigate to the project directory in your terminal
-4. Run the application with: `python app.py`
-5. Open your browser and visit: `http://127.0.0.1:5000`
+4. Install required dependencies: `pip install -r requirements.txt`
+5. Initialize the database: `python migrations/create_tables.py`
+6. Run the application with: `python app.py`
+7. Open your browser and visit: `http://127.0.0.1:5000`
 
 ## Screenshots
 
@@ -78,24 +90,44 @@ With increasing cyber threats, password security remains critical. Many users do
 
 ## Security & Privacy
 
-This tool performs all password analysis locally in your browser and server. Passwords are never stored or transmitted to external services. The application uses industry-standard security practices to ensure user privacy.
+This application implements true zero-knowledge encryption:
+
+- **Master Password**: Never transmitted or stored in plain text
+- **PBKDF2 Key Derivation**: Protects against brute force attacks
+- **AES-256 Encryption**: Military-grade encryption for stored passwords
+- **Client-Side Decryption**: Passwords are only decrypted in the user's browser
+- **Secure Session Management**: CSRF protection and secure session cookies
+
+All password analysis is performed locally in your browser and server. Passwords are never stored or transmitted to external services unless encrypted with your master password.
 
 ## Project Structure
 
 ```
 password-analyzer/
-├── app.py                 # Flask application and backend logic
-├── static/                # Static files
-│   ├── css/               # CSS stylesheets
-│   │   └── styles.css     # Main stylesheet
-│   ├── js/                # JavaScript files
-│   │   ├── analyzer.js    # Password analysis logic
-│   │   ├── charts.js      # Chart visualization
+├── app.py                  # Flask application and API routes
+├── app/                    # Application package
+│   ├── __init__.py         # Package initialization
+│   ├── models.py           # Database models
+│   ├── forms.py            # WTForms form classes
+│   ├── utils/              # Utility functions
+│   └── main.py             # Core application logic
+├── migrations/             # Database migrations
+│   └── create_tables.py    # Database initialization script
+├── static/                 # Static files
+│   ├── css/                # CSS stylesheets
+│   │   └── styles.css      # Main stylesheet
+│   ├── js/                 # JavaScript files
+│   │   ├── analyzer.js     # Password analysis logic
+│   │   ├── charts.js       # Chart visualization
 │   │   └── password-generator.js  # Password generation
-│   └── images/            # Image assets
-├── templates/             # HTML templates
-│   └── index.html         # Main application page
-└── README.md              # Project documentation
+│   └── images/             # Image assets
+├── templates/              # HTML templates
+│   ├── index.html          # Main application page
+│   ├── login.html          # Login page
+│   ├── register.html       # Registration page
+│   └── dashboard.html      # User dashboard/vault page
+├── requirements.txt        # Project dependencies
+└── README.md               # Project documentation
 ```
 
 ## Future Enhancements

@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template, send_from_directory
+from flask import Flask, request, jsonify, render_template, send_from_directory, redirect, url_for, flash, session
 import os
 import re
 import math
@@ -7,8 +7,34 @@ import random
 import string
 import time
 from collections import Counter
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_migrate import Migrate
+from datetime import datetime
+import json
+
+# Import models and forms
+from app.models import db, User, Password
+from app.forms import RegistrationForm, LoginForm, SavePasswordForm
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(24).hex())
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URI', 'sqlite:///password_analyzer.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize extensions
+db.init_app(app)
+migrate = Migrate(app, db)
+
+# Initialize login manager
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+login_manager.login_message = 'Please log in to access this page.'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 # Path to RockYou dataset
 ROCKYOU_PATH = r"C:\Users\Parth bansal\Downloads\archive (6)\rockyou.txt"
@@ -89,6 +115,71 @@ def index():
 def serve_static(path):
     return send_from_directory('static', path)
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        flash('Account created successfully! You can now log in.', 'success')
+        return redirect(url_for('login'))
+    
+    return render_template('register.html', form=form)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        
+        if user and user.verify_password(form.password.data):
+            login_user(user, remember=form.remember_me.data)
+            user.last_login = datetime.utcnow()
+            db.session.commit()
+            
+            # Store master password temporarily for this session (will be used for decryption)
+            # This is a security tradeoff - we keep it in the session for usability
+            session['master_password'] = form.password.data
+            
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('dashboard'))
+        else:
+            flash('Invalid email or password', 'danger')
+    
+    return render_template('login.html', form=form)
+
+@app.route('/logout')
+@login_required
+def logout():
+    # Remove master password from session
+    if 'master_password' in session:
+        session.pop('master_password')
+    
+    logout_user()
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('index'))
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    # Get user's saved passwords
+    saved_passwords = Password.query.filter_by(user_id=current_user.id).all()
+    
+    # Convert to dict without decrypted passwords
+    passwords_data = [p.to_dict() for p in saved_passwords]
+    
+    return render_template('dashboard.html', passwords=passwords_data)
+
 @app.route('/analyze', methods=['POST'])
 def analyze_password():
     data = request.json
@@ -137,7 +228,97 @@ def analyze_password():
         'pattern_data': pattern_data
     }
     
+    # If user is logged in, provide option to save password
+    if current_user.is_authenticated:
+        response['can_save'] = True
+    
     return jsonify(response)
+
+@app.route('/save-password', methods=['POST'])
+@login_required
+def save_password():
+    # Get form data
+    data = request.json
+    plain_password = data.get('password')
+    website = data.get('website', '')
+    label = data.get('label', '')
+    score = int(data.get('score', 0))
+    entropy = float(data.get('entropy', 0))
+    
+    if not plain_password:
+        return jsonify({'error': 'Password is required'}), 400
+    
+    # Make sure we have the master password in session
+    if 'master_password' not in session:
+        return jsonify({'error': 'Session expired. Please log in again.'}), 401
+    
+    # Encrypt the password
+    encrypted_password = current_user.encrypt_password(plain_password)
+    
+    # Create and save password record
+    password = Password(
+        user_id=current_user.id,
+        encrypted_password=encrypted_password,
+        website=website,
+        label=label,
+        score=score,
+        entropy=entropy
+    )
+    
+    db.session.add(password)
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': 'Password saved successfully',
+        'password_id': password.id
+    })
+
+@app.route('/passwords')
+@login_required
+def list_passwords():
+    # Get user's saved passwords
+    saved_passwords = Password.query.filter_by(user_id=current_user.id).all()
+    
+    # Convert to dict without decrypted passwords
+    passwords_data = [p.to_dict() for p in saved_passwords]
+    
+    return jsonify(passwords_data)
+
+@app.route('/passwords/<int:password_id>')
+@login_required
+def view_password(password_id):
+    # Get password by ID
+    password = Password.query.filter_by(id=password_id, user_id=current_user.id).first_or_404()
+    
+    # Check if master password exists in session
+    include_decrypted = 'master_password' in session
+    master_password = session.get('master_password') if include_decrypted else None
+    
+    # Convert to dict, optionally with decrypted password
+    password_data = password.to_dict(include_password=include_decrypted, master_password=master_password)
+    
+    return jsonify(password_data)
+
+@app.route('/passwords/<int:password_id>', methods=['DELETE'])
+@login_required
+def delete_password(password_id):
+    # Get password by ID
+    password = Password.query.filter_by(id=password_id, user_id=current_user.id).first_or_404()
+    
+    # Delete password
+    db.session.delete(password)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': 'Password deleted successfully'})
+
+@app.route('/init-db')
+def init_db():
+    try:
+        db.create_all()
+        return jsonify({'message': 'Database initialized successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 def calculate_entropy(password):
     """Calculate Shannon entropy of password"""
@@ -705,5 +886,6 @@ def calculate_pattern_data(password):
     }
 
 if __name__ == '__main__':
-    # For local development
-    app.run(debug=True, port=5000) 
+    with app.app_context():
+        db.create_all()  # Create database tables on startup
+    app.run(debug=True) 
