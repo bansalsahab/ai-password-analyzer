@@ -43,7 +43,7 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 # Path to RockYou dataset
-ROCKYOU_PATH = r"C:\Users\Parth bansal\Downloads\archive (6)\rockyou.txt"
+ROCKYOU_PATH = r""
 
 # Global variable to store common passwords (loaded lazily)
 common_passwords = set()
